@@ -275,18 +275,18 @@
     <span class="topbar-title">Inventory Dashboard</span>
   </div>
   <button class="btn-refresh" onclick="loadData()" id="btn-refresh">
-    <span id="refresh-icon">⟳</span> Osvježi
+    <span id="refresh-icon">⟳</span> Refresh
   </button>
 </div>
 
 <div class="main">
   <div class="status-bar">
-    <div><span class="status-dot"></span><span class="status-text" id="status-text">Učitavanje...</span></div>
+    <div><span class="status-dot"></span><span class="status-text" id="status-text">Loading...</span></div>
     <div class="updated-text" id="updated-text"></div>
   </div>
 
   <div id="error-box" style="display:none;" class="error-box"></div>
-  <div id="loading" class="loading"><span class="spin">⟳</span> &nbsp;Učitavam podatke iz Google Sheets...</div>
+  <div id="loading" class="loading"><span class="spin">⟳</span> &nbsp;Loading from google sheet...</div>
 
   <div id="main-content" style="display:none;">
     <div class="metrics" id="metrics"></div>
@@ -297,15 +297,15 @@
         <input type="text" id="search" placeholder="Pretraži SKU..." oninput="render()">
       </div>
       <select id="sort" onchange="render()">
-        <option value="qty-desc">Qty ↓ (najveći prvo)</option>
-        <option value="qty-asc">Qty ↑ (najmanji prvo)</option>
+        <option value="qty-desc">Qty ↓ (highest)</option>
+        <option value="qty-asc">Qty ↑ (lowest)</option>
         <option value="sku-asc">SKU A → Z</option>
         <option value="sku-desc">SKU Z → A</option>
       </select>
     </div>
 
     <div class="chart-card">
-      <div class="chart-label">Top 10 SKU-ova po količini</div>
+      <div class="chart-label">Top 10 SKUs by qty</div>
       <div class="chart-wrap">
         <canvas id="chart"></canvas>
       </div>
@@ -317,13 +317,13 @@
           <tr>
             <th onclick="toggleSort('sku')">SKU <span id="arr-sku"></span></th>
             <th onclick="toggleSort('qty')">Qty shipped <span id="arr-qty">↓</span></th>
-            <th style="text-align:right;">Udio</th>
+            <th style="text-align:right;">Share</th>
             <th>Status</th>
           </tr>
         </thead>
         <tbody id="tbody"></tbody>
       </table>
-      <div class="no-results" id="no-results" style="display:none;">Nema rezultata.</div>
+      <div class="no-results" id="no-results" style="display:none;">No results.</div>
     </div>
   </div>
 </div>
