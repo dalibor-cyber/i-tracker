@@ -1,0 +1,483 @@
+<!DOCTYPE html>
+<html lang="sr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SKU Inventory Tracker</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<style>
+  :root {
+    --bg: #0f0f11;
+    --bg2: #17171a;
+    --bg3: #1e1e22;
+    --border: #2a2a30;
+    --text: #e8e8ea;
+    --text2: #888890;
+    --accent: #4f8ef7;
+    --accent2: #2563eb;
+    --green: #22c55e;
+    --orange: #f59e0b;
+    --red: #ef4444;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    min-height: 100vh;
+    padding: 0;
+  }
+
+  /* TOP BAR */
+  .topbar {
+    background: var(--bg2);
+    border-bottom: 1px solid var(--border);
+    padding: 0 2rem;
+    height: 56px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+  .topbar-left {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .logo {
+    font-family: 'DM Mono', monospace;
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--accent);
+    letter-spacing: 0.05em;
+  }
+  .divider { width: 1px; height: 20px; background: var(--border); }
+  .topbar-title { font-size: 14px; color: var(--text2); }
+  .btn-refresh {
+    background: var(--accent);
+    color: #fff;
+    border: none;
+    border-radius: 6px;
+    padding: 7px 14px;
+    font-size: 13px;
+    font-family: 'DM Sans', sans-serif;
+    font-weight: 500;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    transition: background 0.15s;
+  }
+  .btn-refresh:hover { background: var(--accent2); }
+  .btn-refresh:disabled { opacity: 0.5; cursor: not-allowed; }
+  .spin { display: inline-block; animation: spin 0.8s linear infinite; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* MAIN */
+  .main { max-width: 1100px; margin: 0 auto; padding: 2rem; }
+
+  /* STATUS BAR */
+  .status-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 1.5rem;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .status-dot {
+    width: 7px; height: 7px;
+    border-radius: 50%;
+    background: var(--green);
+    display: inline-block;
+    margin-right: 6px;
+    animation: pulse 2s infinite;
+  }
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.4; }
+  }
+  .status-text { font-size: 13px; color: var(--text2); }
+  .updated-text { font-size: 12px; color: var(--text2); font-family: 'DM Mono', monospace; }
+
+  /* METRICS */
+  .metrics {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 12px;
+    margin-bottom: 1.5rem;
+  }
+  .metric {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 1rem 1.25rem;
+  }
+  .metric-label {
+    font-size: 11px;
+    color: var(--text2);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-bottom: 6px;
+    font-family: 'DM Mono', monospace;
+  }
+  .metric-value {
+    font-size: 26px;
+    font-weight: 600;
+    color: var(--text);
+    line-height: 1;
+  }
+  .metric-value.small { font-size: 18px; }
+  .metric-accent { color: var(--accent); }
+
+  /* CONTROLS */
+  .controls {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 1.5rem;
+    flex-wrap: wrap;
+  }
+  .search-wrap { position: relative; flex: 1; min-width: 200px; }
+  .search-icon {
+    position: absolute; left: 10px; top: 50%; transform: translateY(-50%);
+    color: var(--text2); font-size: 14px; pointer-events: none;
+  }
+  input[type=text] {
+    width: 100%;
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 7px;
+    color: var(--text);
+    font-size: 13px;
+    font-family: 'DM Sans', sans-serif;
+    padding: 8px 12px 8px 32px;
+    outline: none;
+    transition: border-color 0.15s;
+  }
+  input[type=text]:focus { border-color: var(--accent); }
+  input[type=text]::placeholder { color: var(--text2); }
+  select {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 7px;
+    color: var(--text);
+    font-size: 13px;
+    font-family: 'DM Sans', sans-serif;
+    padding: 8px 12px;
+    outline: none;
+    cursor: pointer;
+  }
+
+  /* CHART */
+  .chart-card {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 1.25rem;
+    margin-bottom: 1.5rem;
+  }
+  .chart-label {
+    font-size: 11px;
+    color: var(--text2);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    font-family: 'DM Mono', monospace;
+    margin-bottom: 1rem;
+  }
+  .chart-wrap { position: relative; height: 240px; }
+
+  /* TABLE */
+  .table-card {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    overflow: hidden;
+  }
+  table { width: 100%; border-collapse: collapse; }
+  thead tr { background: var(--bg3); border-bottom: 1px solid var(--border); }
+  thead th {
+    padding: 11px 16px;
+    text-align: left;
+    font-size: 11px;
+    color: var(--text2);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    font-family: 'DM Mono', monospace;
+    font-weight: 500;
+    cursor: pointer;
+    user-select: none;
+    white-space: nowrap;
+  }
+  thead th:hover { color: var(--text); }
+  thead th:not(:first-child) { text-align: right; }
+  tbody tr { border-top: 1px solid var(--border); transition: background 0.1s; }
+  tbody tr:hover { background: var(--bg3); }
+  tbody td { padding: 11px 16px; font-size: 14px; }
+  tbody td:not(:first-child) { text-align: right; }
+  .sku-badge {
+    font-family: 'DM Mono', monospace;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--accent);
+  }
+  .rank { color: var(--text2); font-size: 12px; margin-right: 8px; font-family: 'DM Mono', monospace; }
+  .bar-bg { background: var(--bg3); border-radius: 3px; height: 5px; overflow: hidden; width: 80px; display: inline-block; vertical-align: middle; }
+  .bar-fill { height: 5px; border-radius: 3px; background: var(--accent); }
+  .badge {
+    display: inline-block;
+    font-size: 11px;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-weight: 500;
+    font-family: 'DM Mono', monospace;
+  }
+  .badge-high { background: rgba(34,197,94,0.15); color: var(--green); }
+  .badge-mid  { background: rgba(245,158,11,0.15); color: var(--orange); }
+  .badge-low  { background: rgba(255,255,255,0.06); color: var(--text2); }
+
+  /* LOADING / ERROR */
+  .loading {
+    padding: 4rem;
+    text-align: center;
+    color: var(--text2);
+    font-size: 14px;
+  }
+  .error-box {
+    background: rgba(239,68,68,0.1);
+    border: 1px solid rgba(239,68,68,0.3);
+    border-radius: 10px;
+    padding: 1.25rem;
+    color: #fca5a5;
+    font-size: 13px;
+    line-height: 1.6;
+    margin-bottom: 1.5rem;
+  }
+  .no-results { padding: 2rem; text-align: center; color: var(--text2); font-size: 14px; }
+
+  @media (max-width: 600px) {
+    .main { padding: 1rem; }
+    .topbar { padding: 0 1rem; }
+    .metric-value { font-size: 20px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="topbar-left">
+    <span class="logo">SKU//TRACK</span>
+    <div class="divider"></div>
+    <span class="topbar-title">Inventory Dashboard</span>
+  </div>
+  <button class="btn-refresh" onclick="loadData()" id="btn-refresh">
+    <span id="refresh-icon">⟳</span> Osvježi
+  </button>
+</div>
+
+<div class="main">
+  <div class="status-bar">
+    <div><span class="status-dot"></span><span class="status-text" id="status-text">Učitavanje...</span></div>
+    <div class="updated-text" id="updated-text"></div>
+  </div>
+
+  <div id="error-box" style="display:none;" class="error-box"></div>
+  <div id="loading" class="loading"><span class="spin">⟳</span> &nbsp;Učitavam podatke iz Google Sheets...</div>
+
+  <div id="main-content" style="display:none;">
+    <div class="metrics" id="metrics"></div>
+
+    <div class="controls">
+      <div class="search-wrap">
+        <span class="search-icon">⌕</span>
+        <input type="text" id="search" placeholder="Pretraži SKU..." oninput="render()">
+      </div>
+      <select id="sort" onchange="render()">
+        <option value="qty-desc">Qty ↓ (najveći prvo)</option>
+        <option value="qty-asc">Qty ↑ (najmanji prvo)</option>
+        <option value="sku-asc">SKU A → Z</option>
+        <option value="sku-desc">SKU Z → A</option>
+      </select>
+    </div>
+
+    <div class="chart-card">
+      <div class="chart-label">Top 10 SKU-ova po količini</div>
+      <div class="chart-wrap">
+        <canvas id="chart"></canvas>
+      </div>
+    </div>
+
+    <div class="table-card">
+      <table>
+        <thead>
+          <tr>
+            <th onclick="toggleSort('sku')">SKU <span id="arr-sku"></span></th>
+            <th onclick="toggleSort('qty')">Qty shipped <span id="arr-qty">↓</span></th>
+            <th style="text-align:right;">Udio</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody id="tbody"></tbody>
+      </table>
+      <div class="no-results" id="no-results" style="display:none;">Nema rezultata.</div>
+    </div>
+  </div>
+</div>
+
+<script>
+const PROXY = 'https://wispy-voice-e5e5.dalibor-e79.workers.dev/';
+let allData = [], sortKey = 'qty', sortDir = 'desc', chartInstance = null;
+
+async function loadData() {
+  const btn = document.getElementById('btn-refresh');
+  const icon = document.getElementById('refresh-icon');
+  btn.disabled = true;
+  icon.className = 'spin';
+  icon.textContent = '⟳';
+
+  document.getElementById('loading').style.display = 'block';
+  document.getElementById('main-content').style.display = 'none';
+  document.getElementById('error-box').style.display = 'none';
+  document.getElementById('status-text').textContent = 'Učitavanje...';
+
+  try {
+    const res = await fetch(PROXY);
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    const json = await res.json();
+    if (!Array.isArray(json) || json.length === 0) throw new Error('Sheet je prazan.');
+
+    allData = json.filter(d => d.sku && d.sku !== 'SKU');
+
+    const updated = allData[0]?.updated ? new Date(allData[0].updated) : null;
+    document.getElementById('updated-text').textContent = updated
+      ? 'Zadnji update: ' + updated.toLocaleDateString('sr-Latn-RS') + ' ' + updated.toLocaleTimeString('sr-Latn-RS', {hour:'2-digit', minute:'2-digit'})
+      : '';
+
+    document.getElementById('status-text').textContent = allData.length + ' SKU-ova učitano';
+    document.getElementById('loading').style.display = 'none';
+    document.getElementById('main-content').style.display = 'block';
+    render();
+  } catch(e) {
+    document.getElementById('loading').style.display = 'none';
+    document.getElementById('error-box').style.display = 'block';
+    document.getElementById('error-box').textContent = 'Greška: ' + e.message + ' — Provjeri da li Cloudflare Worker radi.';
+    document.getElementById('status-text').textContent = 'Greška pri učitavanju';
+  }
+
+  btn.disabled = false;
+  icon.className = '';
+  icon.textContent = '⟳';
+}
+
+function getFiltered() {
+  const q = document.getElementById('search').value.toLowerCase();
+  let data = allData.filter(d => d.sku.toLowerCase().includes(q));
+  const sv = document.getElementById('sort').value;
+  if (sv === 'qty-desc') data.sort((a,b) => Number(b.qty) - Number(a.qty));
+  else if (sv === 'qty-asc') data.sort((a,b) => Number(a.qty) - Number(b.qty));
+  else if (sv === 'sku-asc') data.sort((a,b) => a.sku.localeCompare(b.sku));
+  else data.sort((a,b) => b.sku.localeCompare(a.sku));
+  return data;
+}
+
+function badge(qty, max) {
+  if (qty >= max * 0.3) return '<span class="badge badge-high">HIGH</span>';
+  if (qty >= max * 0.05) return '<span class="badge badge-mid">MID</span>';
+  return '<span class="badge badge-low">LOW</span>';
+}
+
+function toggleSort(key) {
+  if (sortKey === key) sortDir = sortDir === 'desc' ? 'asc' : 'desc';
+  else { sortKey = key; sortDir = key === 'qty' ? 'desc' : 'asc'; }
+  document.getElementById('sort').value = sortKey + '-' + sortDir;
+  render();
+}
+
+function render() {
+  const data = getFiltered();
+  const total = allData.reduce((s,d) => s + Number(d.qty), 0);
+  const maxQty = Math.max(...allData.map(d => Number(d.qty)));
+  const topSku = [...allData].sort((a,b) => Number(b.qty) - Number(a.qty))[0];
+  const nonZero = allData.filter(d => Number(d.qty) > 0).length;
+
+  document.getElementById('arr-sku').textContent = sortKey==='sku' ? (sortDir==='asc'?'↑':'↓') : '';
+  document.getElementById('arr-qty').textContent = sortKey==='qty' ? (sortDir==='asc'?'↑':'↓') : '↓';
+
+  document.getElementById('metrics').innerHTML =
+    '<div class="metric"><div class="metric-label">Ukupno shipped</div><div class="metric-value metric-accent">' + total.toLocaleString() + '</div></div>' +
+    '<div class="metric"><div class="metric-label">SKU-ova ukupno</div><div class="metric-value">' + allData.length + '</div></div>' +
+    '<div class="metric"><div class="metric-label">SKU-ova aktivnih</div><div class="metric-value">' + nonZero + '</div></div>' +
+    '<div class="metric"><div class="metric-label">Top SKU</div><div class="metric-value small metric-accent">' + (topSku?.sku||'-') + '</div></div>';
+
+  if (data.length === 0) {
+    document.getElementById('tbody').innerHTML = '';
+    document.getElementById('no-results').style.display = 'block';
+  } else {
+    document.getElementById('no-results').style.display = 'none';
+    document.getElementById('tbody').innerHTML = data.map((d, i) => {
+      const qty = Number(d.qty);
+      const pct = maxQty > 0 ? Math.round((qty / maxQty) * 100) : 0;
+      return '<tr>' +
+        '<td><span class="rank">' + (i+1) + '</span><span class="sku-badge">' + d.sku + '</span></td>' +
+        '<td><strong>' + qty.toLocaleString() + '</strong></td>' +
+        '<td style="text-align:right;"><div class="bar-bg"><div class="bar-fill" style="width:' + pct + '%"></div></div></td>' +
+        '<td>' + badge(qty, maxQty) + '</td></tr>';
+    }).join('');
+  }
+
+  renderChart();
+}
+
+function renderChart() {
+  const top = [...allData].sort((a,b) => Number(b.qty) - Number(a.qty)).slice(0, 10);
+  if (chartInstance) chartInstance.destroy();
+  const ctx = document.getElementById('chart').getContext('2d');
+  chartInstance = new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: top.map(d => d.sku),
+      datasets: [{
+        data: top.map(d => Number(d.qty)),
+        backgroundColor: top.map((d,i) => i===0 ? '#4f8ef7' : i<=2 ? '#3b72d4' : '#2a4fa0'),
+        borderRadius: 5,
+        borderSkipped: false,
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          backgroundColor: '#1e1e22',
+          borderColor: '#2a2a30',
+          borderWidth: 1,
+          titleColor: '#888890',
+          bodyColor: '#e8e8ea',
+          callbacks: { label: ctx => '  ' + ctx.parsed.y.toLocaleString() + ' kom' }
+        }
+      },
+      scales: {
+        x: {
+          grid: { display: false },
+          ticks: { font: { size: 11, family: 'DM Mono' }, color: '#888890', maxRotation: 30 },
+          border: { color: '#2a2a30' }
+        },
+        y: {
+          grid: { color: 'rgba(255,255,255,0.04)' },
+          ticks: { font: { size: 11, family: 'DM Mono' }, color: '#888890', callback: v => v.toLocaleString() },
+          border: { color: '#2a2a30' }
+        }
+      }
+    }
+  });
+}
+
+loadData();
+</script>
+</body>
+</html>
