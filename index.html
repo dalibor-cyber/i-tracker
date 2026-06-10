@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="sr">
+<html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -8,473 +8,533 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
 <style>
   :root {
-    --bg: #0f0f11;
-    --bg2: #17171a;
-    --bg3: #1e1e22;
-    --border: #2a2a30;
-    --text: #e8e8ea;
-    --text2: #888890;
-    --accent: #4f8ef7;
-    --accent2: #2563eb;
-    --green: #22c55e;
-    --orange: #f59e0b;
-    --red: #ef4444;
+    --bg: #0f0f11; --bg2: #17171a; --bg3: #1e1e22;
+    --border: #2a2a30; --text: #e8e8ea; --text2: #888890;
+    --accent: #4f8ef7; --accent2: #2563eb;
+    --green: #22c55e; --orange: #f59e0b; --red: #ef4444;
   }
-
   * { box-sizing: border-box; margin: 0; padding: 0; }
-
-  body {
-    background: var(--bg);
-    color: var(--text);
-    font-family: 'DM Sans', sans-serif;
-    min-height: 100vh;
-    padding: 0;
-  }
+  body { background: var(--bg); color: var(--text); font-family: 'DM Sans', sans-serif; min-height: 100vh; }
 
   /* TOP BAR */
-  .topbar {
-    background: var(--bg2);
-    border-bottom: 1px solid var(--border);
-    padding: 0 2rem;
-    height: 56px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    position: sticky;
-    top: 0;
-    z-index: 100;
-  }
-  .topbar-left {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-  }
-  .logo {
-    font-family: 'DM Mono', monospace;
-    font-size: 14px;
-    font-weight: 500;
-    color: var(--accent);
-    letter-spacing: 0.05em;
-  }
-  .divider { width: 1px; height: 20px; background: var(--border); }
+  .topbar { background: var(--bg2); border-bottom: 1px solid var(--border); padding: 0 2rem; height: 56px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 100; }
+  .logo { font-family: 'DM Mono', monospace; font-size: 14px; font-weight: 500; color: var(--accent); letter-spacing: 0.05em; }
+  .divider { width: 1px; height: 20px; background: var(--border); margin: 0 12px; }
   .topbar-title { font-size: 14px; color: var(--text2); }
-  .btn-refresh {
-    background: var(--accent);
-    color: #fff;
-    border: none;
-    border-radius: 6px;
-    padding: 7px 14px;
-    font-size: 13px;
-    font-family: 'DM Sans', sans-serif;
-    font-weight: 500;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    transition: background 0.15s;
-  }
-  .btn-refresh:hover { background: var(--accent2); }
-  .btn-refresh:disabled { opacity: 0.5; cursor: not-allowed; }
+  .topbar-right { display: flex; gap: 8px; }
+  .btn { border: none; border-radius: 6px; padding: 7px 14px; font-size: 13px; font-family: 'DM Sans', sans-serif; font-weight: 500; cursor: pointer; transition: background 0.15s; }
+  .btn-primary { background: var(--accent); color: #fff; }
+  .btn-primary:hover { background: var(--accent2); }
+  .btn-success { background: #16a34a; color: #fff; }
+  .btn-success:hover { background: #15803d; }
+  .btn:disabled { opacity: 0.5; cursor: not-allowed; }
   .spin { display: inline-block; animation: spin 0.8s linear infinite; }
   @keyframes spin { to { transform: rotate(360deg); } }
 
-  /* MAIN */
-  .main { max-width: 1100px; margin: 0 auto; padding: 2rem; }
+  /* TABS */
+  .tabs { background: var(--bg2); border-bottom: 1px solid var(--border); padding: 0 2rem; display: flex; gap: 0; }
+  .tab { padding: 12px 20px; font-size: 13px; color: var(--text2); cursor: pointer; border-bottom: 2px solid transparent; transition: all 0.15s; }
+  .tab:hover { color: var(--text); }
+  .tab.active { color: var(--accent); border-bottom-color: var(--accent); }
 
-  /* STATUS BAR */
-  .status-bar {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    margin-bottom: 1.5rem;
-    flex-wrap: wrap;
-    gap: 8px;
-  }
-  .status-dot {
-    width: 7px; height: 7px;
-    border-radius: 50%;
-    background: var(--green);
-    display: inline-block;
-    margin-right: 6px;
-    animation: pulse 2s infinite;
-  }
-  @keyframes pulse {
-    0%, 100% { opacity: 1; }
-    50% { opacity: 0.4; }
-  }
+  /* MAIN */
+  .main { max-width: 1200px; margin: 0 auto; padding: 2rem; }
+
+  /* STATUS */
+  .status-bar { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 8px; }
+  .status-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--green); display: inline-block; margin-right: 6px; animation: pulse 2s infinite; }
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
   .status-text { font-size: 13px; color: var(--text2); }
   .updated-text { font-size: 12px; color: var(--text2); font-family: 'DM Mono', monospace; }
 
   /* METRICS */
-  .metrics {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-    gap: 12px;
-    margin-bottom: 1.5rem;
-  }
-  .metric {
-    background: var(--bg2);
-    border: 1px solid var(--border);
-    border-radius: 10px;
-    padding: 1rem 1.25rem;
-  }
-  .metric-label {
-    font-size: 11px;
-    color: var(--text2);
-    text-transform: uppercase;
-    letter-spacing: 0.08em;
-    margin-bottom: 6px;
-    font-family: 'DM Mono', monospace;
-  }
-  .metric-value {
-    font-size: 26px;
-    font-weight: 600;
-    color: var(--text);
-    line-height: 1;
-  }
-  .metric-value.small { font-size: 18px; }
-  .metric-accent { color: var(--accent); }
+  .metrics { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 12px; margin-bottom: 1.5rem; }
+  .metric { background: var(--bg2); border: 1px solid var(--border); border-radius: 10px; padding: 1rem 1.25rem; }
+  .metric-label { font-size: 11px; color: var(--text2); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 6px; font-family: 'DM Mono', monospace; }
+  .metric-value { font-size: 24px; font-weight: 600; color: var(--text); line-height: 1; }
+  .metric-value.accent { color: var(--accent); }
+  .metric-value.green { color: var(--green); }
+  .metric-value.red { color: var(--red); }
+  .metric-value.small { font-size: 17px; }
 
   /* CONTROLS */
-  .controls {
-    display: flex;
-    gap: 10px;
-    margin-bottom: 1.5rem;
-    flex-wrap: wrap;
-  }
+  .controls { display: flex; gap: 10px; margin-bottom: 1.5rem; flex-wrap: wrap; }
   .search-wrap { position: relative; flex: 1; min-width: 200px; }
-  .search-icon {
-    position: absolute; left: 10px; top: 50%; transform: translateY(-50%);
-    color: var(--text2); font-size: 14px; pointer-events: none;
+  .search-icon { position: absolute; left: 10px; top: 50%; transform: translateY(-50%); color: var(--text2); pointer-events: none; }
+  input[type=text], input[type=number], select, textarea {
+    background: var(--bg2); border: 1px solid var(--border); border-radius: 7px;
+    color: var(--text); font-size: 13px; font-family: 'DM Sans', sans-serif;
+    padding: 8px 12px; outline: none; transition: border-color 0.15s;
   }
-  input[type=text] {
-    width: 100%;
-    background: var(--bg2);
-    border: 1px solid var(--border);
-    border-radius: 7px;
-    color: var(--text);
-    font-size: 13px;
-    font-family: 'DM Sans', sans-serif;
-    padding: 8px 12px 8px 32px;
-    outline: none;
-    transition: border-color 0.15s;
-  }
-  input[type=text]:focus { border-color: var(--accent); }
-  input[type=text]::placeholder { color: var(--text2); }
-  select {
-    background: var(--bg2);
-    border: 1px solid var(--border);
-    border-radius: 7px;
-    color: var(--text);
-    font-size: 13px;
-    font-family: 'DM Sans', sans-serif;
-    padding: 8px 12px;
-    outline: none;
-    cursor: pointer;
-  }
+  input[type=text]:focus, input[type=number]:focus, select:focus, textarea:focus { border-color: var(--accent); }
+  input[type=text]::placeholder, input[type=number]::placeholder, textarea::placeholder { color: var(--text2); }
+  .search-input { width: 100%; padding-left: 32px; }
 
   /* CHART */
-  .chart-card {
-    background: var(--bg2);
-    border: 1px solid var(--border);
-    border-radius: 10px;
-    padding: 1.25rem;
-    margin-bottom: 1.5rem;
-  }
-  .chart-label {
-    font-size: 11px;
-    color: var(--text2);
-    text-transform: uppercase;
-    letter-spacing: 0.08em;
-    font-family: 'DM Mono', monospace;
-    margin-bottom: 1rem;
-  }
+  .chart-card { background: var(--bg2); border: 1px solid var(--border); border-radius: 10px; padding: 1.25rem; margin-bottom: 1.5rem; }
+  .chart-label { font-size: 11px; color: var(--text2); text-transform: uppercase; letter-spacing: 0.08em; font-family: 'DM Mono', monospace; margin-bottom: 1rem; }
   .chart-wrap { position: relative; height: 240px; }
 
   /* TABLE */
-  .table-card {
-    background: var(--bg2);
-    border: 1px solid var(--border);
-    border-radius: 10px;
-    overflow: hidden;
-  }
+  .table-card { background: var(--bg2); border: 1px solid var(--border); border-radius: 10px; overflow: hidden; margin-bottom: 1.5rem; }
   table { width: 100%; border-collapse: collapse; }
   thead tr { background: var(--bg3); border-bottom: 1px solid var(--border); }
-  thead th {
-    padding: 11px 16px;
-    text-align: left;
-    font-size: 11px;
-    color: var(--text2);
-    text-transform: uppercase;
-    letter-spacing: 0.08em;
-    font-family: 'DM Mono', monospace;
-    font-weight: 500;
-    cursor: pointer;
-    user-select: none;
-    white-space: nowrap;
-  }
+  thead th { padding: 11px 14px; text-align: left; font-size: 11px; color: var(--text2); text-transform: uppercase; letter-spacing: 0.08em; font-family: 'DM Mono', monospace; cursor: pointer; user-select: none; white-space: nowrap; }
   thead th:hover { color: var(--text); }
   thead th:not(:first-child) { text-align: right; }
   tbody tr { border-top: 1px solid var(--border); transition: background 0.1s; }
   tbody tr:hover { background: var(--bg3); }
-  tbody td { padding: 11px 16px; font-size: 14px; }
+  tbody td { padding: 10px 14px; font-size: 14px; }
   tbody td:not(:first-child) { text-align: right; }
-  .sku-badge {
-    font-family: 'DM Mono', monospace;
-    font-size: 13px;
-    font-weight: 500;
-    color: var(--accent);
-  }
-  .rank { color: var(--text2); font-size: 12px; margin-right: 8px; font-family: 'DM Mono', monospace; }
-  .bar-bg { background: var(--bg3); border-radius: 3px; height: 5px; overflow: hidden; width: 80px; display: inline-block; vertical-align: middle; }
-  .bar-fill { height: 5px; border-radius: 3px; background: var(--accent); }
-  .badge {
-    display: inline-block;
-    font-size: 11px;
-    padding: 2px 8px;
-    border-radius: 4px;
-    font-weight: 500;
-    font-family: 'DM Mono', monospace;
-  }
-  .badge-high { background: rgba(34,197,94,0.15); color: var(--green); }
-  .badge-mid  { background: rgba(245,158,11,0.15); color: var(--orange); }
-  .badge-low  { background: rgba(255,255,255,0.06); color: var(--text2); }
+  .sku-badge { font-family: 'DM Mono', monospace; font-size: 13px; font-weight: 500; color: var(--accent); }
+  .rank { color: var(--text2); font-size: 12px; margin-right: 6px; font-family: 'DM Mono', monospace; }
+  .stock-positive { color: var(--green); font-weight: 600; }
+  .stock-zero { color: var(--orange); font-weight: 600; }
+  .stock-negative { color: var(--red); font-weight: 600; }
+  .badge { display: inline-block; font-size: 11px; padding: 2px 8px; border-radius: 4px; font-weight: 500; font-family: 'DM Mono', monospace; }
+  .badge-ok   { background: rgba(34,197,94,0.15);  color: var(--green); }
+  .badge-low  { background: rgba(245,158,11,0.15); color: var(--orange); }
+  .badge-out  { background: rgba(239,68,68,0.15);  color: var(--red); }
 
-  /* LOADING / ERROR */
-  .loading {
-    padding: 4rem;
-    text-align: center;
-    color: var(--text2);
-    font-size: 14px;
-  }
-  .error-box {
-    background: rgba(239,68,68,0.1);
-    border: 1px solid rgba(239,68,68,0.3);
-    border-radius: 10px;
-    padding: 1.25rem;
-    color: #fca5a5;
-    font-size: 13px;
-    line-height: 1.6;
-    margin-bottom: 1.5rem;
-  }
+  /* RESTOCK FORM */
+  .restock-card { background: var(--bg2); border: 1px solid var(--border); border-radius: 10px; padding: 1.5rem; margin-bottom: 1.5rem; }
+  .restock-title { font-size: 15px; font-weight: 500; margin-bottom: 1.25rem; }
+  .form-grid { display: grid; grid-template-columns: 1fr 1fr 1fr auto; gap: 10px; align-items: end; }
+  .form-group label { display: block; font-size: 11px; color: var(--text2); text-transform: uppercase; letter-spacing: 0.07em; font-family: 'DM Mono', monospace; margin-bottom: 6px; }
+  .form-group input, .form-group select { width: 100%; }
+  .autocomplete-wrap { position: relative; }
+  .autocomplete-list { position: absolute; top: 100%; left: 0; right: 0; background: var(--bg3); border: 1px solid var(--border); border-radius: 7px; z-index: 50; max-height: 200px; overflow-y: auto; margin-top: 4px; }
+  .autocomplete-item { padding: 8px 12px; font-size: 13px; font-family: 'DM Mono', monospace; cursor: pointer; color: var(--text); }
+  .autocomplete-item:hover, .autocomplete-item.selected { background: var(--accent); color: #fff; }
+
+  .mode-toggle { display: flex; gap: 0; border: 1px solid var(--border); border-radius: 7px; overflow: hidden; }
+  .mode-btn { background: transparent; border: none; color: var(--text2); font-size: 13px; font-family: 'DM Sans', sans-serif; padding: 6px 14px; cursor: pointer; transition: all 0.15s; }
+  .mode-btn.active { background: var(--accent); color: #fff; }
+  .mode-btn:hover:not(.active) { background: var(--bg3); color: var(--text); }
+  .restock-log { margin-top: 1.5rem; }
+  .restock-log-title { font-size: 12px; color: var(--text2); text-transform: uppercase; letter-spacing: 0.07em; font-family: 'DM Mono', monospace; margin-bottom: 10px; }
+  .restock-entry { display: flex; align-items: center; gap: 12px; padding: 8px 0; border-top: 1px solid var(--border); font-size: 13px; }
+  .restock-entry-sku { font-family: 'DM Mono', monospace; color: var(--accent); width: 120px; flex-shrink: 0; }
+  .restock-entry-qty { color: var(--green); font-weight: 500; width: 60px; flex-shrink: 0; }
+  .restock-entry-date { color: var(--text2); font-size: 11px; font-family: 'DM Mono', monospace; }
+  .restock-entry-note { color: var(--text2); font-size: 12px; flex: 1; }
+
+  /* ALERTS */
+  .alert { padding: 10px 14px; border-radius: 8px; font-size: 13px; margin-bottom: 1rem; }
+  .alert-success { background: rgba(34,197,94,0.15); color: var(--green); border: 1px solid rgba(34,197,94,0.3); }
+  .alert-error { background: rgba(239,68,68,0.15); color: var(--red); border: 1px solid rgba(239,68,68,0.3); }
+
+  /* LOADING */
+  .loading { padding: 4rem; text-align: center; color: var(--text2); font-size: 14px; }
+  .error-msg { background: rgba(239,68,68,0.1); border: 1px solid rgba(239,68,68,0.3); border-radius: 10px; padding: 1.25rem; color: #fca5a5; font-size: 13px; margin-bottom: 1.5rem; }
   .no-results { padding: 2rem; text-align: center; color: var(--text2); font-size: 14px; }
 
-  @media (max-width: 600px) {
+  .tab-content { display: none; }
+  .tab-content.active { display: block; }
+
+  @media (max-width: 700px) {
     .main { padding: 1rem; }
     .topbar { padding: 0 1rem; }
-    .metric-value { font-size: 20px; }
+    .form-grid { grid-template-columns: 1fr 1fr; }
   }
 </style>
 </head>
 <body>
 
 <div class="topbar">
-  <div class="topbar-left">
+  <div style="display:flex;align-items:center;">
     <span class="logo">SKU//TRACK</span>
     <div class="divider"></div>
     <span class="topbar-title">Inventory Dashboard</span>
   </div>
-  <button class="btn-refresh" onclick="loadData()" id="btn-refresh">
-    <span id="refresh-icon">⟳</span> Refresh
-  </button>
+  <div class="topbar-right">
+    <button class="btn btn-primary" onclick="loadData()" id="btn-refresh">⟳ Refresh</button>
+  </div>
+</div>
+
+<div class="tabs">
+  <div class="tab active" onclick="switchTab('dashboard')">Dashboard</div>
+  <div class="tab" onclick="switchTab('restock')">+ Restock</div>
 </div>
 
 <div class="main">
-  <div class="status-bar">
-    <div><span class="status-dot"></span><span class="status-text" id="status-text">Loading...</span></div>
-    <div class="updated-text" id="updated-text"></div>
+  <div id="error-box" style="display:none;" class="error-msg"></div>
+  <div id="loading" class="loading"><span class="spin">⟳</span> &nbsp;Loading data...</div>
+
+  <!-- DASHBOARD TAB -->
+  <div id="tab-dashboard" class="tab-content active">
+    <div id="dashboard-content" style="display:none;">
+      <div class="status-bar">
+        <div><span class="status-dot"></span><span class="status-text" id="status-text">Loading...</span></div>
+        <div class="updated-text" id="updated-text"></div>
+      </div>
+
+      <div class="metrics" id="metrics"></div>
+
+      <div class="chart-card">
+        <div class="chart-label">Top 10 SKUs by Stock on Hand</div>
+        <div class="chart-wrap"><canvas id="chart"></canvas></div>
+      </div>
+
+      <div class="controls">
+        <div class="search-wrap">
+          <span class="search-icon">⌕</span>
+          <input type="text" class="search-input" id="search" placeholder="Search SKU..." oninput="render()">
+        </div>
+        <select id="sort" onchange="render()">
+          <option value="stock-desc">Stock ↓</option>
+          <option value="stock-asc">Stock ↑</option>
+          <option value="shipped-desc">Shipped ↓</option>
+          <option value="sku-asc">SKU A→Z</option>
+        </select>
+        <select id="filter" onchange="render()">
+          <option value="all">All SKUs</option>
+          <option value="ok">In Stock</option>
+          <option value="low">Low Stock</option>
+          <option value="out">Out of Stock</option>
+        </select>
+      </div>
+
+      <div class="table-card">
+        <table>
+          <thead>
+            <tr>
+              <th onclick="toggleSort('sku')"># SKU <span id="arr-sku"></span></th>
+              <th onclick="toggleSort('shipped')">Shipped <span id="arr-shipped"></span></th>
+              <th onclick="toggleSort('restocked')">Restocked <span id="arr-restocked"></span></th>
+              <th onclick="toggleSort('stock')">Stock on Hand <span id="arr-stock">↓</span></th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody id="tbody"></tbody>
+        </table>
+        <div class="no-results" id="no-results" style="display:none;">No results found.</div>
+      </div>
+    </div>
   </div>
 
-  <div id="error-box" style="display:none;" class="error-box"></div>
-  <div id="loading" class="loading"><span class="spin">⟳</span> &nbsp;Loading data from Google Sheets...</div>
-
-  <div id="main-content" style="display:none;">
-    <div class="metrics" id="metrics"></div>
-
-    <div class="controls">
-      <div class="search-wrap">
-        <span class="search-icon">⌕</span>
-        <input type="text" id="search" placeholder="Search SKU..." oninput="render()">
+  <!-- RESTOCK TAB -->
+  <div id="tab-restock" class="tab-content">
+    <div class="restock-card">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.25rem;">
+        <div class="restock-title" style="margin-bottom:0;">Inventory Update</div>
+        <div class="mode-toggle">
+          <button class="mode-btn active" id="mode-add" onclick="setMode('add')">+ Add Stock</button>
+          <button class="mode-btn" id="mode-set" onclick="setMode('set')">&#9998; Set Exact</button>
+        </div>
       </div>
-      <select id="sort" onchange="render()">
-        <option value="qty-desc">Qty ↓ (highest first)</option>
-        <option value="qty-asc">Qty ↑ (lowest first)</option>
-        <option value="sku-asc">SKU A → Z</option>
-        <option value="sku-desc">SKU Z → A</option>
-      </select>
+      <div id="mode-hint" style="font-size:12px;color:var(--text2);margin-bottom:1rem;">Adds quantity to current stock on hand.</div>
+      <div id="restock-alert" style="display:none;"></div>
+      <div class="form-grid">
+        <div class="form-group">
+          <label>SKU</label>
+          <div class="autocomplete-wrap">
+            <input type="text" id="restock-sku" placeholder="Type SKU..." oninput="autocomplete()" onkeydown="acKeydown(event)" autocomplete="off">
+            <div class="autocomplete-list" id="ac-list" style="display:none;"></div>
+          </div>
+        </div>
+        <div class="form-group">
+          <label id="qty-label">Quantity to Add</label>
+          <input type="number" id="restock-qty" placeholder="0" min="0">
+        </div>
+        <div class="form-group">
+          <label>Note (optional)</label>
+          <input type="text" id="restock-note" placeholder="e.g. PO #1234">
+        </div>
+        <div class="form-group">
+          <label>&nbsp;</label>
+          <button class="btn btn-success" onclick="submitRestock()" id="btn-restock" style="width:100%;padding:9px 14px;">Add Stock</button>
+        </div>
+      </div>
     </div>
 
-    <div class="chart-card">
-      <div class="chart-label">Top 10 SKUs by quantity</div>
-      <div class="chart-wrap">
-        <canvas id="chart"></canvas>
+    <div class="restock-card">
+      <div class="restock-log-title">Recent Restocks</div>
+      <div id="restock-log-list">
+        <div style="color:var(--text2);font-size:13px;padding:1rem 0;">No restocks yet in this session.</div>
       </div>
-    </div>
-
-    <div class="table-card">
-      <table>
-        <thead>
-          <tr>
-            <th onclick="toggleSort('sku')">SKU <span id="arr-sku"></span></th>
-            <th onclick="toggleSort('qty')">Qty shipped <span id="arr-qty">↓</span></th>
-            <th style="text-align:right;">Share</th>
-            <th>Status</th>
-          </tr>
-        </thead>
-        <tbody id="tbody"></tbody>
-      </table>
-      <div class="no-results" id="no-results" style="display:none;">No results.</div>
     </div>
   </div>
+
 </div>
 
 <script>
 const PROXY = 'https://wispy-voice-e5e5.dalibor-e79.workers.dev/';
-let allData = [], sortKey = 'qty', sortDir = 'desc', chartInstance = null;
+const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzfoNZWvVB9T1wonzHSxa7MgQleL7P7jsEwiNTedKfnV1HWiv3I7xv7Q5fBANpPi5u18A/exec';
 
+let allData = [];
+let sortKey = 'stock', sortDir = 'desc';
+let chartInstance = null;
+let acIndex = -1;
+let sessionRestocks = [];
+
+// ── TABS ──
+function switchTab(name) {
+  document.querySelectorAll('.tab').forEach((t,i) => t.classList.toggle('active', ['dashboard','restock'][i] === name));
+  document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+  document.getElementById('tab-' + name).classList.add('active');
+}
+
+// ── LOAD DATA ──
 async function loadData() {
   const btn = document.getElementById('btn-refresh');
-  const icon = document.getElementById('refresh-icon');
-  btn.disabled = true;
-  icon.className = 'spin';
-  icon.textContent = '⟳';
-
+  btn.disabled = true; btn.innerHTML = '<span class="spin">⟳</span> Loading...';
   document.getElementById('loading').style.display = 'block';
-  document.getElementById('main-content').style.display = 'none';
+  document.getElementById('dashboard-content').style.display = 'none';
   document.getElementById('error-box').style.display = 'none';
-  document.getElementById('status-text').textContent = 'Loading...';
 
   try {
     const res = await fetch(PROXY);
     if (!res.ok) throw new Error('HTTP ' + res.status);
     const json = await res.json();
-    if (!Array.isArray(json) || json.length === 0) throw new Error('Sheet je prazan.');
+    if (!Array.isArray(json) || json.length === 0) throw new Error('Sheet is empty.');
 
-    allData = json.filter(d => d.sku && d.sku !== 'SKU');
+    allData = json.filter(d => d.sku && d.sku !== 'SKU').map(d => ({
+      sku:       d.sku,
+      shipped:   Number(d.shipped)   || 0,
+      restocked: Number(d.restocked) || 0,
+      stock:     Number(d.stock)     || 0,
+      updated:   d.updated || '',
+    }));
 
-    const updated = allData[0]?.updated ? new Date(allData[0].updated) : null;
-    document.getElementById('updated-text').textContent = updated
-      ? 'Last updated: ' + updated.toLocaleDateString('sr-Latn-RS') + ' ' + updated.toLocaleTimeString('sr-Latn-RS', {hour:'2-digit', minute:'2-digit'})
-      : '';
-
+    const updated = allData[0]?.updated;
+    document.getElementById('updated-text').textContent = updated ? 'Last updated: ' + updated : '';
     document.getElementById('status-text').textContent = allData.length + ' SKUs loaded';
     document.getElementById('loading').style.display = 'none';
-    document.getElementById('main-content').style.display = 'block';
+    document.getElementById('dashboard-content').style.display = 'block';
     render();
   } catch(e) {
     document.getElementById('loading').style.display = 'none';
     document.getElementById('error-box').style.display = 'block';
-    document.getElementById('error-box').textContent = 'Error: ' + e.message + ' — Check if Cloudflare Worker is running.';
+    document.getElementById('error-box').textContent = 'Error: ' + e.message;
     document.getElementById('status-text').textContent = 'Error loading data';
   }
 
-  btn.disabled = false;
-  icon.className = '';
-  icon.textContent = '⟳';
+  btn.disabled = false; btn.innerHTML = '⟳ Refresh';
 }
 
+// ── RENDER TABLE ──
 function getFiltered() {
   const q = document.getElementById('search').value.toLowerCase();
-  let data = allData.filter(d => d.sku.toLowerCase().includes(q));
-  const sv = document.getElementById('sort').value;
-  if (sv === 'qty-desc') data.sort((a,b) => Number(b.qty) - Number(a.qty));
-  else if (sv === 'qty-asc') data.sort((a,b) => Number(a.qty) - Number(b.qty));
-  else if (sv === 'sku-asc') data.sort((a,b) => a.sku.localeCompare(b.sku));
-  else data.sort((a,b) => b.sku.localeCompare(a.sku));
+  const f = document.getElementById('filter').value;
+  const s = document.getElementById('sort').value;
+
+  let data = allData.filter(d => {
+    if (!d.sku.toLowerCase().includes(q)) return false;
+    if (f === 'ok')  return d.stock > 10;
+    if (f === 'low') return d.stock > 0 && d.stock <= 10;
+    if (f === 'out') return d.stock <= 0;
+    return true;
+  });
+
+  if (s === 'stock-desc')   data.sort((a,b) => b.stock - a.stock);
+  else if (s === 'stock-asc')    data.sort((a,b) => a.stock - b.stock);
+  else if (s === 'shipped-desc') data.sort((a,b) => b.shipped - a.shipped);
+  else data.sort((a,b) => a.sku.localeCompare(b.sku));
   return data;
 }
 
-function badge(qty, max) {
-  if (qty >= max * 0.3) return '<span class="badge badge-high">HIGH</span>';
-  if (qty >= max * 0.05) return '<span class="badge badge-mid">MID</span>';
-  return '<span class="badge badge-low">LOW</span>';
+function stockBadge(stock) {
+  if (stock > 10)  return '<span class="badge badge-ok">IN STOCK</span>';
+  if (stock > 0)   return '<span class="badge badge-low">LOW</span>';
+  return '<span class="badge badge-out">OUT</span>';
+}
+
+function stockClass(stock) {
+  if (stock > 0)  return 'stock-positive';
+  if (stock === 0) return 'stock-zero';
+  return 'stock-negative';
 }
 
 function toggleSort(key) {
   if (sortKey === key) sortDir = sortDir === 'desc' ? 'asc' : 'desc';
-  else { sortKey = key; sortDir = key === 'qty' ? 'desc' : 'asc'; }
-  document.getElementById('sort').value = sortKey + '-' + sortDir;
+  else { sortKey = key; sortDir = 'desc'; }
+  const map = {'stock-desc':'stock-desc','stock-asc':'stock-asc','shipped-desc':'shipped-desc','sku-asc':'sku-asc'};
+  document.getElementById('sort').value = sortKey === 'sku' ? 'sku-asc' : sortKey + '-' + sortDir;
   render();
 }
 
 function render() {
   const data = getFiltered();
-  const total = allData.reduce((s,d) => s + Number(d.qty), 0);
-  const maxQty = Math.max(...allData.map(d => Number(d.qty)));
-  const topSku = [...allData].sort((a,b) => Number(b.qty) - Number(a.qty))[0];
-  const nonZero = allData.filter(d => Number(d.qty) > 0).length;
+  const totalShipped   = allData.reduce((s,d) => s + d.shipped, 0);
+  const totalRestocked = allData.reduce((s,d) => s + d.restocked, 0);
+  const totalStock     = allData.reduce((s,d) => s + d.stock, 0);
+  const outOfStock     = allData.filter(d => d.stock <= 0).length;
 
-  document.getElementById('arr-sku').textContent = sortKey==='sku' ? (sortDir==='asc'?'↑':'↓') : '';
-  document.getElementById('arr-qty').textContent = sortKey==='qty' ? (sortDir==='asc'?'↑':'↓') : '↓';
+  ['sku','shipped','restocked','stock'].forEach(k => {
+    document.getElementById('arr-'+k).textContent = sortKey===k ? (sortDir==='asc'?'↑':'↓') : '';
+  });
 
   document.getElementById('metrics').innerHTML =
-    '<div class="metric"><div class="metric-label">Total shipped</div><div class="metric-value metric-accent">' + total.toLocaleString() + '</div></div>' +
-    '<div class="metric"><div class="metric-label">Total SKUs</div><div class="metric-value">' + allData.length + '</div></div>' +
-    '<div class="metric"><div class="metric-label">Active SKUs</div><div class="metric-value">' + nonZero + '</div></div>' +
-    '<div class="metric"><div class="metric-label">Top SKU</div><div class="metric-value small metric-accent">' + (topSku?.sku||'-') + '</div></div>';
+    `<div class="metric"><div class="metric-label">Total Shipped</div><div class="metric-value accent">${totalShipped.toLocaleString()}</div></div>` +
+    `<div class="metric"><div class="metric-label">Total Restocked</div><div class="metric-value green">${totalRestocked.toLocaleString()}</div></div>` +
+    `<div class="metric"><div class="metric-label">Stock on Hand</div><div class="metric-value ${totalStock < 0 ? 'red' : 'green'}">${totalStock.toLocaleString()}</div></div>` +
+    `<div class="metric"><div class="metric-label">Out of Stock</div><div class="metric-value ${outOfStock > 0 ? 'red' : 'green'}">${outOfStock}</div></div>` +
+    `<div class="metric"><div class="metric-label">Total SKUs</div><div class="metric-value">${allData.length}</div></div>`;
 
-  if (data.length === 0) {
-    document.getElementById('tbody').innerHTML = '';
-    document.getElementById('no-results').style.display = 'block';
-  } else {
-    document.getElementById('no-results').style.display = 'none';
-    document.getElementById('tbody').innerHTML = data.map((d, i) => {
-      const qty = Number(d.qty);
-      const pct = maxQty > 0 ? Math.round((qty / maxQty) * 100) : 0;
-      return '<tr>' +
-        '<td><span class="rank">' + (i+1) + '</span><span class="sku-badge">' + d.sku + '</span></td>' +
-        '<td><strong>' + qty.toLocaleString() + '</strong></td>' +
-        '<td style="text-align:right;"><div class="bar-bg"><div class="bar-fill" style="width:' + pct + '%"></div></div></td>' +
-        '<td>' + badge(qty, maxQty) + '</td></tr>';
-    }).join('');
-  }
+  document.getElementById('no-results').style.display = data.length === 0 ? 'block' : 'none';
+  document.getElementById('tbody').innerHTML = data.map((d,i) =>
+    `<tr>
+      <td><span class="rank">${i+1}</span><span class="sku-badge">${d.sku}</span></td>
+      <td>${d.shipped.toLocaleString()}</td>
+      <td>${d.restocked.toLocaleString()}</td>
+      <td><span class="${stockClass(d.stock)}">${d.stock.toLocaleString()}</span></td>
+      <td>${stockBadge(d.stock)}</td>
+    </tr>`
+  ).join('');
 
   renderChart();
 }
 
 function renderChart() {
-  const top = [...allData].sort((a,b) => Number(b.qty) - Number(a.qty)).slice(0, 10);
+  const top = [...allData].sort((a,b) => b.stock - a.stock).slice(0, 10);
   if (chartInstance) chartInstance.destroy();
-  const ctx = document.getElementById('chart').getContext('2d');
-  chartInstance = new Chart(ctx, {
+  chartInstance = new Chart(document.getElementById('chart'), {
     type: 'bar',
     data: {
       labels: top.map(d => d.sku),
-      datasets: [{
-        data: top.map(d => Number(d.qty)),
-        backgroundColor: top.map((d,i) => i===0 ? '#4f8ef7' : i<=2 ? '#3b72d4' : '#2a4fa0'),
-        borderRadius: 5,
-        borderSkipped: false,
-      }]
+      datasets: [
+        { label: 'Restocked', data: top.map(d => d.restocked), backgroundColor: '#16a34a', borderRadius: 4, borderSkipped: false },
+        { label: 'Shipped',   data: top.map(d => d.shipped),   backgroundColor: '#378ADD', borderRadius: 4, borderSkipped: false },
+      ]
     },
     options: {
-      responsive: true,
-      maintainAspectRatio: false,
+      responsive: true, maintainAspectRatio: false,
       plugins: {
-        legend: { display: false },
-        tooltip: {
-          backgroundColor: '#1e1e22',
-          borderColor: '#2a2a30',
-          borderWidth: 1,
-          titleColor: '#888890',
-          bodyColor: '#e8e8ea',
-          callbacks: { label: ctx => '  ' + ctx.parsed.y.toLocaleString() + ' kom' }
-        }
+        legend: { display: true, labels: { color: '#888890', font: { size: 11 } } },
+        tooltip: { callbacks: { label: ctx => ' ' + ctx.dataset.label + ': ' + ctx.parsed.y.toLocaleString() } }
       },
       scales: {
-        x: {
-          grid: { display: false },
-          ticks: { font: { size: 11, family: 'DM Mono' }, color: '#888890', maxRotation: 30 },
-          border: { color: '#2a2a30' }
-        },
-        y: {
-          grid: { color: 'rgba(255,255,255,0.04)' },
-          ticks: { font: { size: 11, family: 'DM Mono' }, color: '#888890', callback: v => v.toLocaleString() },
-          border: { color: '#2a2a30' }
-        }
+        x: { grid: { display: false }, ticks: { color: '#888890', font: { size: 11 }, maxRotation: 30 }, border: { color: '#2a2a30' } },
+        y: { grid: { color: 'rgba(255,255,255,0.04)' }, ticks: { color: '#888890', font: { size: 11 }, callback: v => v.toLocaleString() }, border: { color: '#2a2a30' } }
       }
     }
   });
+}
+
+// ── AUTOCOMPLETE ──
+function autocomplete() {
+  const q = document.getElementById('restock-sku').value.toLowerCase();
+  const list = document.getElementById('ac-list');
+  acIndex = -1;
+  if (!q || allData.length === 0) { list.style.display = 'none'; return; }
+
+  const matches = allData.filter(d => d.sku.toLowerCase().includes(q)).slice(0, 8);
+  if (matches.length === 0) { list.style.display = 'none'; return; }
+
+  list.innerHTML = matches.map((d,i) =>
+    `<div class="autocomplete-item" onclick="selectAC('${d.sku}')">${d.sku} <span style="color:var(--text2);font-size:11px;margin-left:8px;">stock: ${d.stock}</span></div>`
+  ).join('');
+  list.style.display = 'block';
+}
+
+function selectAC(sku) {
+  document.getElementById('restock-sku').value = sku;
+  document.getElementById('ac-list').style.display = 'none';
+  document.getElementById('restock-qty').focus();
+}
+
+function acKeydown(e) {
+  const list = document.getElementById('ac-list');
+  const items = list.querySelectorAll('.autocomplete-item');
+  if (e.key === 'ArrowDown') { acIndex = Math.min(acIndex+1, items.length-1); items.forEach((el,i) => el.classList.toggle('selected', i===acIndex)); e.preventDefault(); }
+  else if (e.key === 'ArrowUp') { acIndex = Math.max(acIndex-1, 0); items.forEach((el,i) => el.classList.toggle('selected', i===acIndex)); e.preventDefault(); }
+  else if (e.key === 'Enter' && acIndex >= 0) { selectAC(items[acIndex].textContent.split(' ')[0]); }
+  else if (e.key === 'Escape') { list.style.display = 'none'; }
+}
+
+document.addEventListener('click', e => {
+  if (!e.target.closest('.autocomplete-wrap')) document.getElementById('ac-list').style.display = 'none';
+});
+
+// ── RESTOCK SUBMIT ──
+
+let currentMode = 'add';
+
+function setMode(mode) {
+  currentMode = mode;
+  document.getElementById('mode-add').classList.toggle('active', mode === 'add');
+  document.getElementById('mode-set').classList.toggle('active', mode === 'set');
+  if (mode === 'add') {
+    document.getElementById('qty-label').textContent = 'Quantity to Add';
+    document.getElementById('mode-hint').textContent = 'Adds quantity to current stock on hand.';
+    document.getElementById('btn-restock').textContent = 'Add Stock';
+    document.getElementById('restock-qty').placeholder = '0';
+  } else {
+    document.getElementById('qty-label').textContent = 'Set Stock To';
+    document.getElementById('mode-hint').textContent = 'Overwrites current stock with exact quantity (inventory correction).';
+    document.getElementById('btn-restock').textContent = 'Set Stock';
+    document.getElementById('restock-qty').placeholder = 'Exact qty';
+  }
+}
+
+async function submitRestock() {
+  const sku  = document.getElementById('restock-sku').value.trim().toUpperCase();
+  const qty  = parseInt(document.getElementById('restock-qty').value);
+  const note = document.getElementById('restock-note').value.trim();
+  const alertEl = document.getElementById('restock-alert');
+
+  if (!sku) { showAlert('error', 'Please enter a SKU.'); return; }
+  if (!qty || qty <= 0) { showAlert('error', 'Please enter a valid quantity.'); return; }
+
+  const btn = document.getElementById('btn-restock');
+  btn.disabled = true; btn.textContent = 'Saving...';
+
+  try {
+    const res = await fetch(APPS_SCRIPT_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ sku, qty, note, mode: currentMode }),
+    });
+    const json = await res.json();
+
+    if (json.success) {
+      showAlert('success', currentMode === 'add' ? `✅ Added ${qty} units to ${sku}. New stock: ${json.newStock}` : `✅ Stock for ${sku} set to ${json.newStock}`);
+      document.getElementById('restock-sku').value = '';
+      document.getElementById('restock-qty').value = '';
+      document.getElementById('restock-note').value = '';
+
+      // Add to session log
+      sessionRestocks.unshift({ sku, qty, note, date: new Date().toLocaleString() });
+      renderRestockLog();
+
+      // Update local data
+      const existing = allData.find(d => d.sku === sku);
+      if (existing) { if (currentMode === 'add') existing.restocked += qty; existing.stock = json.newStock; }
+      else { allData.push({ sku, shipped: 0, restocked: qty, stock: qty, updated: '' }); }
+      render();
+    } else {
+      showAlert('error', 'Error: ' + (json.error || 'Unknown error'));
+    }
+  } catch(e) {
+    showAlert('error', 'Network error: ' + e.message);
+  }
+
+  btn.disabled = false; btn.textContent = 'Add Stock';
+}
+
+function showAlert(type, msg) {
+  const el = document.getElementById('restock-alert');
+  el.className = 'alert alert-' + type;
+  el.textContent = msg;
+  el.style.display = 'block';
+  setTimeout(() => el.style.display = 'none', 5000);
+}
+
+function renderRestockLog() {
+  const el = document.getElementById('restock-log-list');
+  if (sessionRestocks.length === 0) {
+    el.innerHTML = '<div style="color:var(--text2);font-size:13px;padding:1rem 0;">No restocks yet in this session.</div>';
+    return;
+  }
+  el.innerHTML = sessionRestocks.map(r =>
+    `<div class="restock-entry">
+      <span class="restock-entry-sku">${r.sku}</span>
+      <span class="restock-entry-qty">+${r.qty}</span>
+      <span class="restock-entry-note">${r.note || '—'}</span>
+      <span class="restock-entry-date">${r.date}</span>
+    </div>`
+  ).join('');
 }
 
 loadData();
