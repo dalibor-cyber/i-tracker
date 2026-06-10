@@ -260,7 +260,7 @@
 
 <script>
 const PROXY = 'https://wispy-voice-e5e5.dalibor-e79.workers.dev/';
-const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzfoNZWvVB9T1wonzHSxa7MgQleL7P7jsEwiNTedKfnV1HWiv3I7xv7Q5fBANpPi5u18A/exec';
+const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwMQ-n0Kh-kyk64ic3g9GBdKQr0poJPpQCW4mgyg1kyCs06EObJV6a8fd0sqivLZBGufQ/exec';
 
 let allData = [];
 let sortKey = 'stock', sortDir = 'desc';
@@ -481,7 +481,7 @@ async function submitRestock() {
   btn.disabled = true; btn.textContent = 'Saving...';
 
   try {
-    const res = await fetch(PROXY, {
+    const res = await fetch(APPS_SCRIPT_URL, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ sku, qty, note, mode: currentMode }),
