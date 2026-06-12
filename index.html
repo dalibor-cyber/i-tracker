@@ -475,7 +475,7 @@ async function submitRestock() {
   const alertEl = document.getElementById('restock-alert');
 
   if (!sku) { showAlert('error', 'Please enter a SKU.'); return; }
-  if (!qty || qty <= 0) { showAlert('error', 'Please enter a valid quantity.'); return; }
+  if (qty === '' || isNaN(qty) || qty < 0 || (currentMode === 'add' && qty <= 0)) { showAlert('error', 'Please enter a valid quantity.'); return; }
 
   const btn = document.getElementById('btn-restock');
   btn.disabled = true; btn.textContent = 'Saving...';
