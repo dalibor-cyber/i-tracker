@@ -229,7 +229,7 @@
         <div class="form-group">
           <label>SKU</label>
           <div class="autocomplete-wrap">
-            <input type="text" id="restock-sku" placeholder="Type SKU..." oninput="autocomplete()" onkeydown="acKeydown(event)" autocomplete="off">
+            <input type="text" id="restock-sku" placeholder="Type SKU..." oninput="showAutocomplete()" onkeydown="acKeydown(event)" autocomplete="off">
             <div class="autocomplete-list" id="ac-list" style="display:none;"></div>
           </div>
         </div>
@@ -413,7 +413,7 @@ function renderChart() {
 }
 
 // ── AUTOCOMPLETE ──
-function autocomplete() {
+function showAutocomplete() {
   const q = document.getElementById('restock-sku').value.toLowerCase();
   const list = document.getElementById('ac-list');
   acIndex = -1;
@@ -481,7 +481,7 @@ async function submitRestock() {
   btn.disabled = true; btn.textContent = 'Saving...';
 
   try {
-    const res = await fetch(APPS_SCRIPT_URL, {
+    const res = await fetch(PROXY, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ sku, qty, note, mode: currentMode }),
